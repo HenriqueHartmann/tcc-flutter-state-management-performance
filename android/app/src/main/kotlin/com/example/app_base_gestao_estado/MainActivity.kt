@@ -1,0 +1,6 @@
+package com.example.app_base_gestao_estado
+
+import io.flutter.embedding.android.FlutterActivity
+
+class MainActivity: FlutterActivity() {
+}
