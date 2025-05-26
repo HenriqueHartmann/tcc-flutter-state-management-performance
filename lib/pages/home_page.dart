@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:app_base_gestao_estado/item_card_style.dart';
-import 'package:app_base_gestao_estado/item_card.dart';
+import 'package:app_base_gestao_estado/models/item_card_style.dart';
+import 'package:app_base_gestao_estado/widgets/item_card.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage ({ super.key });
