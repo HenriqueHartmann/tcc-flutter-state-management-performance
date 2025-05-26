@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'item_card_style.dart';
+import '../models/item_card_style.dart';
 
 class ItemCard extends StatefulWidget {
   final String title;
