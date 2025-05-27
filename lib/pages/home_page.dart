@@ -1,47 +1,71 @@
 import 'package:flutter/material.dart';
+import 'package:app_base_gestao_estado/models/item.dart';
 import 'package:app_base_gestao_estado/models/item_card_style.dart';
 import 'package:app_base_gestao_estado/widgets/item_card.dart';
+import 'package:app_base_gestao_estado/data/item_repository.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage ({ super.key });
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-    final List<Map<String, dynamic>> items = [
-    {
-      'title': 'Item 1',
-      'description': 'Descrição do item 1',
-      'style': const ItemCardStyle(),
-    },
-    {
-      'title': 'Item 2',
-      'description': 'Descrição do item 2',
-      'style': const ItemCardStyle(),
-    },
-    {
-      'title': 'Item 3',
-      'description': 'Descrição do item 3',
-      'style': const ItemCardStyle(),
-    },
-  ];
-  
+  late Future<List<Map<String, dynamic>>> _itemsWithStyle;
+
   @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(title: const Text('Lista de Itens')),
-    body: ListView.builder(
-      itemCount: items.length,
-      itemBuilder: (context, index) {
-        return ItemCard(
-          title: items[index]['title']!,
-          description: items[index]['description']!,
-          style: items[index]['style'], // Passa o estilo individual
-        );
-      },
-    ),
-  );
-}
+  void initState() {
+    super.initState();
+    _itemsWithStyle = _loadItems();
+  }
+
+  Future<List<Map<String, dynamic>>> _loadItems() async {
+    final repo = ItemRepository();
+    final items = await repo.fetchItems(limit: 10);
+
+    return items.map((item) {
+      const style = ItemCardStyle();
+      return {
+        'item': item,
+        'style': style,
+      };
+    }).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Lista de Filmes')),
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: _itemsWithStyle,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(child: Text('Erro: ${snapshot.error}'));
+          }
+
+          final data = snapshot.data ?? [];
+
+          return ListView.builder(
+            itemCount: data.length,
+            itemBuilder: (context, index) {
+              final item = data[index]['item'] as Item;
+              final style = data[index]['style'] as ItemCardStyle;
+
+              return ItemCard(
+                index: index,
+                title: item.title,
+                description: item.description,
+                style: style,
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
 }
