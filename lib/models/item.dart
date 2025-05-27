@@ -13,7 +13,7 @@ class Item {
     return Item(
       id: map['id'] as int,
       title: map['title'] as String,
-      description: map['description'] as String,
+      description: map['overview'] as String,
     );
   }
 }

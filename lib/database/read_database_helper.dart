@@ -11,6 +11,7 @@ class ReadOnlyDatabaseHelper {
     final documentsDir = await getApplicationDocumentsDirectory();
     final dbPath = join(documentsDir.path, _dbName);
 
+    // Garante que o banco seja copiado do assets apenas uma vez
     final dbExists = await File(dbPath).exists();
 
     if (!dbExists) {

@@ -1,13 +1,15 @@
+import 'package:app_base_gestao_estado/models/item_card_style.dart';
 import 'package:flutter/material.dart';
-import '../models/item_card_style.dart';
 
 class ItemCard extends StatefulWidget {
+  final int index;
   final String title;
   final String description;
   final ItemCardStyle style;
 
   const ItemCard({
     Key? key,
+    required this.index,
     required this.title,
     required this.description,
     required this.style,
@@ -18,8 +20,6 @@ class ItemCard extends StatefulWidget {
 }
 
 class _ItemCardState extends State<ItemCard> {
-  String _selectedAttribute = 'backgroundColor';
-
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -31,7 +31,7 @@ class _ItemCardState extends State<ItemCard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.title,
+              '${widget.index + 1}. ${widget.title}',
               style: TextStyle(
                 fontSize: widget.style.titleFontSize,
                 fontWeight: FontWeight.bold,
@@ -46,52 +46,9 @@ class _ItemCardState extends State<ItemCard> {
                 color: widget.style.descriptionFontColor,
               ),
             ),
-            const SizedBox(height: 16),
-            DropdownButton<String>(
-              value: _selectedAttribute,
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedAttribute = newValue!;
-                });
-              },
-              items: <String>['backgroundColor', 'titleFontSize', 'titleFontColor', 'descriptionFontSize', 'descriptionFontColor']
-                  .map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                _changeItemStyle();
-              },
-              child: Text('Alterar $_selectedAttribute'),
-            ),
           ],
         ),
       ),
     );
-  }
-
-  void _changeItemStyle() {
-    ItemCardStyle newStyle = widget.style;
-    switch (_selectedAttribute) {
-      case 'backgroundColor':
-        newStyle.toggleBackgroundColor();
-        break;
-      case 'titleFontSize':
-        newStyle.toggleTitleFontSize();
-        break;
-      case 'titleFontColor':
-        newStyle.toggleTitleFontColor();
-        break;
-      case 'descriptionFontSize':
-        newStyle.toggleDescriptionFontSize();
-        break;
-      case 'descriptionFontColor':
-        newStyle.toggleTitleFontColor();
-        break;
-    }
   }
 }
