@@ -5,6 +5,14 @@ enum ItemCardState {
   selecionado,
 }
 
+enum ItemCardAttribute {
+  backgroundColor,
+  titleFontSize,
+  titleFontColor,
+  descriptionFontSize,
+  descriptionFontColor,
+}
+
 class ItemCardStyle {
   // Definição de constantes para evitar problemas de comparação
   static const Color normalBackgroundColor = Colors.white;
@@ -96,4 +104,23 @@ class ItemCardStyle {
           : selectedDescriptionFontColor,
     );
   }
+
+  /// Alterna determinado atributo entre normal e selecionado
+  ItemCardStyle toggleSelectedAttribute(ItemCardAttribute attribute) {
+    switch(attribute) {
+      case ItemCardAttribute.backgroundColor:
+        return toggleBackgroundColor();
+      case ItemCardAttribute.titleFontSize:
+        return toggleTitleFontSize();
+      case ItemCardAttribute.titleFontColor:
+        return toggleTitleFontColor();
+      case ItemCardAttribute.descriptionFontSize:
+        return toggleDescriptionFontSize();
+      case ItemCardAttribute.descriptionFontColor:
+        return toggleDescriptionFontColor();
+      default:
+        return this;
+    }
+  }
+
 }

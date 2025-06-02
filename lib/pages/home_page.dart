@@ -33,10 +33,38 @@ class _HomePageState extends State<HomePage> {
     }).toList();
   }
 
+  ItemCardAttribute _selectedAttribute = ItemCardAttribute.backgroundColor;
+
+  void onItemTapped(List<Map<String, dynamic>> data, int index) {
+    setState(() {
+      final style = data[index]['style'] as ItemCardStyle;
+
+      data[index]['style'] = style.toggleSelectedAttribute(_selectedAttribute);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Lista de Filmes')),
+      appBar: AppBar(
+        title: const Text('Lista de Filmes'),
+        actions: [
+          DropdownButton<ItemCardAttribute>(
+            value: _selectedAttribute,
+            onChanged: (value) {
+              setState(() {
+                _selectedAttribute = value!;
+              });
+            },
+            items: ItemCardAttribute.values.map((attr) {
+              return DropdownMenuItem(
+                value: attr,
+                child: Text(attr.toString().split('.').last),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _itemsWithStyle,
         builder: (context, snapshot) {
@@ -56,11 +84,17 @@ class _HomePageState extends State<HomePage> {
               final item = data[index]['item'] as Item;
               final style = data[index]['style'] as ItemCardStyle;
 
-              return ItemCard(
-                index: index,
-                title: item.title,
-                description: item.description,
-                style: style,
+              return GestureDetector(
+                onTap: () {
+                  // Ação ao tocar no item
+                  onItemTapped(data, index); // substitua com a função de toggle desejada
+                },
+                child: ItemCard(
+                  index: index,
+                  title: item.title,
+                  description: item.description,
+                  style: style,
+                ),
               );
             },
           );
