@@ -10,7 +10,22 @@ enum ItemCardAttribute {
   titleFontSize,
   titleFontColor,
   descriptionFontSize,
-  descriptionFontColor,
+  descriptionFontColor;
+
+  String get label {
+    switch (this) {
+      case ItemCardAttribute.backgroundColor:
+        return 'Cor de fundo';
+      case ItemCardAttribute.titleFontSize:
+        return 'Tamanho do título';
+      case ItemCardAttribute.titleFontColor:
+        return 'Cor do título';
+      case ItemCardAttribute.descriptionFontSize:
+        return 'Tamanho da descrição';
+      case ItemCardAttribute.descriptionFontColor:
+        return 'Cor da descrição';
+    }
+  }
 }
 
 class ItemCardStyle {
