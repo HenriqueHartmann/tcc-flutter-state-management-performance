@@ -1,5 +1,5 @@
-import 'package:app_base_gestao_estado/bloc/item_event.dart';
-import 'package:app_base_gestao_estado/bloc/item_state.dart';
+import 'package:app_base_gestao_estado/bloc/item/item_event.dart';
+import 'package:app_base_gestao_estado/bloc/item/item_state.dart';
 import 'package:app_base_gestao_estado/models/item.dart';
 import 'package:app_base_gestao_estado/models/item_card_style.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
