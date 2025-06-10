@@ -21,7 +21,7 @@ class _HomePageState extends State<HomePage> {
     _itemsWithStyle = _loadItems();
   }
 
-  DataLimitOption _selectedLimit = DataLimitOption.limit10;
+  DataLimitOption _selectedLimit = DataLimitOption.limit1k;
   ItemCardAttribute _selectedAttribute = ItemCardAttribute.backgroundColor;
 
   Future<List<Map<String, dynamic>>> _loadItems() async {
@@ -58,13 +58,27 @@ class _HomePageState extends State<HomePage> {
                 _selectedAttribute = value!;
               });
             },
+            dropdownColor: Colors.blue,
+            iconEnabledColor: Colors.white,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
             items: ItemCardAttribute.values.map((attr) {
-              return DropdownMenuItem(
+              return DropdownMenuItem<ItemCardAttribute>(
                 value: attr,
-                child: Text(attr.label),
+                child: Text(
+                  attr.label,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
+                ),
               );
             }).toList(),
-          ),
+          )
         ],
       ),
       body: Padding(
