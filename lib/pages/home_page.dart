@@ -1,9 +1,13 @@
+import 'package:app_base_gestao_estado/bloc/item_bloc.dart';
+import 'package:app_base_gestao_estado/bloc/item_event.dart';
+import 'package:app_base_gestao_estado/bloc/item_state.dart';
 import 'package:app_base_gestao_estado/models/data_limit_option.dart';
 import 'package:flutter/material.dart';
 import 'package:app_base_gestao_estado/models/item.dart';
 import 'package:app_base_gestao_estado/models/item_card_style.dart';
 import 'package:app_base_gestao_estado/widgets/item_card.dart';
 import 'package:app_base_gestao_estado/data/item_repository.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -37,12 +41,10 @@ class _HomePageState extends State<HomePage> {
     }).toList();
   }
 
-  void onItemTapped(List<Map<String, dynamic>> data, int index) {
-    setState(() {
-      final style = data[index]['style'] as ItemCardStyle;
-
-      data[index]['style'] = style.toggleSelectedAttribute(_selectedAttribute);
-    });
+  void onItemTapped(BuildContext context) {
+    context.read<ItemBloc>().add(
+          ToggleStyle(attribute: _selectedAttribute),
+        );
   }
 
   @override
@@ -144,15 +146,28 @@ class _HomePageState extends State<HomePage> {
                       final item = data[index]['item'] as Item;
                       final style = data[index]['style'] as ItemCardStyle;
 
-                      return GestureDetector(
-                        onTap: () {
-                          onItemTapped(data, index);
-                        },
-                        child: ItemCard(
-                          index: index,
-                          title: item.title,
-                          description: item.description,
-                          style: style,
+                      return BlocProvider<ItemBloc>(
+                        create: (_) => ItemBloc()
+                          ..add(InitializeItem(
+                              item: item, style: style)),
+                        child: BlocBuilder<ItemBloc, ItemState>(
+                          builder: (context, state) {
+                            if (state is ItemLoaded) {
+                              return GestureDetector(
+                                onTap: () {
+                                  onItemTapped(context);
+                                },
+                                child: ItemCard(
+                                  index: index,
+                                  title: state.item.title,
+                                  description: state.item.description,
+                                  style: state.style,
+                                ),
+                              );
+                            }
+
+                            return const SizedBox(); // ou um loader, se quiser
+                          },
                         ),
                       );
                     },
