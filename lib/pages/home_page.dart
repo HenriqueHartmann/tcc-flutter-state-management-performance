@@ -1,3 +1,4 @@
+import 'package:app_base_gestao_estado/models/item_with_style_notifier.dart';
 import 'package:app_base_gestao_estado/providers/item_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:app_base_gestao_estado/models/item_card_style.dart';
@@ -33,7 +34,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Lista de Filmes'),
+        title: const Text('Filmes com ChangeNotifier por item'),
         actions: [
           DropdownButton<ItemCardAttribute>(
             value: _selectedAttribute,
@@ -58,27 +59,28 @@ class _HomePageState extends State<HomePage> {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final itemCount = context.watch<ItemProvider>().items.length;
+          final items = context.watch<ItemProvider>().items;
 
           return ListView.builder(
-            itemCount: itemCount,
+            itemCount: items.length,
             itemBuilder: (context, index) {
-              return Selector<ItemProvider, ItemWithStyle>(
-                selector: (_, provider) => provider.items[index],
-                shouldRebuild: (prev, next) => prev != next,
-                builder: (context, itemWithStyle, _) {
-                  return GestureDetector(
-                    onTap: () {
-                      context.read<ItemProvider>().toggleStyle(index, _selectedAttribute);
-                    },
-                    child: ItemCard(
-                      index: index,
-                      title: itemWithStyle.item.title,
-                      description: itemWithStyle.item.description,
-                      style: itemWithStyle.style,
-                    ),
-                  );
-                },
+              return ChangeNotifierProvider.value(
+                value: items[index],
+                child: Consumer<ItemWithStyleNotifier>(
+                  builder: (context, itemNotifier, _) {
+                    return GestureDetector(
+                      onTap: () {
+                        itemNotifier.toggleStyle(_selectedAttribute);
+                      },
+                      child: ItemCard(
+                        index: index,
+                        title: itemNotifier.item.title,
+                        description: itemNotifier.item.description,
+                        style: itemNotifier.style,
+                      ),
+                    );
+                  },
+                ),
               );
             },
           );
