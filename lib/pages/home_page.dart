@@ -1,16 +1,9 @@
-import 'package:app_base_gestao_estado/bloc/item/item_bloc.dart';
-import 'package:app_base_gestao_estado/bloc/item/item_event.dart';
-import 'package:app_base_gestao_estado/bloc/item/item_state.dart';
-import 'package:app_base_gestao_estado/bloc/item_list/item_list_bloc.dart';
-import 'package:app_base_gestao_estado/bloc/item_list/item_list_event.dart';
-import 'package:app_base_gestao_estado/bloc/item_list/item_list_state.dart';
-import 'package:app_base_gestao_estado/models/data_limit_option.dart';
+import 'package:app_base_gestao_estado/providers/item_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:app_base_gestao_estado/models/item.dart';
 import 'package:app_base_gestao_estado/models/item_card_style.dart';
 import 'package:app_base_gestao_estado/widgets/item_card.dart';
 import 'package:app_base_gestao_estado/data/item_repository.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,150 +13,76 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  DataLimitOption _selectedLimit = DataLimitOption.limit1k;
+  late Future<void> _initFuture;
   ItemCardAttribute _selectedAttribute = ItemCardAttribute.backgroundColor;
 
-  void onItemTapped(BuildContext context) {
-    context.read<ItemBloc>().add(
-          ToggleStyle(attribute: _selectedAttribute),
-        );
+  @override
+  void initState() {
+    super.initState();
+
+    _initFuture = Future<void>(() async {
+      await Future.delayed(Duration.zero);
+      final items = await ItemRepository().fetchItems(limit: 1000);
+      if (mounted) {
+        Provider.of<ItemProvider>(context, listen: false).initialize(items);
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => ItemListBloc(repository: ItemRepository())
-        ..add(LoadItemList(limit: _selectedLimit.value)),
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Lista de Filmes'),
-          actions: [
-            DropdownButton<ItemCardAttribute>(
-              value: _selectedAttribute,
-              onChanged: (value) {
-                setState(() {
-                  _selectedAttribute = value!;
-                });
-              },
-              dropdownColor: Colors.blue,
-              iconEnabledColor: Colors.white,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-              items: ItemCardAttribute.values.map((attr) {
-                return DropdownMenuItem<ItemCardAttribute>(
-                  value: attr,
-                  child: Text(
-                    attr.label,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.white,
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Lista de Filmes'),
+        actions: [
+          DropdownButton<ItemCardAttribute>(
+            value: _selectedAttribute,
+            onChanged: (value) {
+              setState(() {
+                _selectedAttribute = value!;
+              });
+            },
+            items: ItemCardAttribute.values.map((attr) {
+              return DropdownMenuItem<ItemCardAttribute>(
+                value: attr,
+                child: Text(attr.label),
+              );
+            }).toList(),
+          )
+        ],
+      ),
+      body: FutureBuilder<void>(
+        future: _initFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final itemCount = context.watch<ItemProvider>().items.length;
+
+          return ListView.builder(
+            itemCount: itemCount,
+            itemBuilder: (context, index) {
+              return Selector<ItemProvider, ItemWithStyle>(
+                selector: (_, provider) => provider.items[index],
+                shouldRebuild: (prev, next) => prev != next,
+                builder: (context, itemWithStyle, _) {
+                  return GestureDetector(
+                    onTap: () {
+                      context.read<ItemProvider>().toggleStyle(index, _selectedAttribute);
+                    },
+                    child: ItemCard(
+                      index: index,
+                      title: itemWithStyle.item.title,
+                      description: itemWithStyle.item.description,
+                      style: itemWithStyle.style,
                     ),
-                  ),
-                );
-              }).toList(),
-            )
-          ],
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Flexible(
-                    child: Padding(
-                      padding: EdgeInsets.only(right: 16.0),
-                      child: Text(
-                        'Limite de dados',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w500),
-                      ),
-                    ),
-                  ),
-                  Flexible(
-                    child: DropdownButton<DataLimitOption>(
-                      value: _selectedLimit,
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedLimit = value!;
-                        });
-                        context
-                            .read<ItemListBloc>()
-                            .add(LoadItemList(limit: _selectedLimit.value));
-                      },
-                      items: DataLimitOption.values.map((attr) {
-                        return DropdownMenuItem(
-                          value: attr,
-                          child: Text(attr.label),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Expanded(
-                child: BlocBuilder<ItemListBloc, ItemListState>(
-                  builder: (context, state) {
-                    if (state is ItemListLoading) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-
-                    if (state is ItemListError) {
-                      return Center(child: Text('Erro: ${state.message}'));
-                    }
-
-                    if (state is ItemListLoaded) {
-                      final data = state.itemsWithStyle;
-
-                      return ListView.builder(
-                        itemCount: data.length,
-                        itemBuilder: (context, index) {
-                          final item = data[index]['item'] as Item;
-                          final style = data[index]['style'] as ItemCardStyle;
-
-                          return BlocProvider<ItemBloc>(
-                            create: (_) => ItemBloc()
-                              ..add(InitializeItem(item: item, style: style)),
-                            child: BlocBuilder<ItemBloc, ItemState>(
-                              builder: (context, state) {
-                                if (state is ItemLoaded) {
-                                  return GestureDetector(
-                                    onTap: () {
-                                      context.read<ItemBloc>().add(
-                                            ToggleStyle(
-                                                attribute: _selectedAttribute),
-                                          );
-                                    },
-                                    child: ItemCard(
-                                      index: index,
-                                      title: state.item.title,
-                                      description: state.item.description,
-                                      style: state.style,
-                                    ),
-                                  );
-                                }
-
-                                return const SizedBox();
-                              },
-                            ),
-                          );
-                        },
-                      );
-                    }
-
-                    return const SizedBox(); // Estado inicial
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
+                  );
+                },
+              );
+            },
+          );
+        },
       ),
     );
   }
