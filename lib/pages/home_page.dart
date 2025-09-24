@@ -1,3 +1,4 @@
+import 'package:app_base_gestao_estado/models/data_limit_option.dart';
 import 'package:app_base_gestao_estado/models/item_with_style_notifier.dart';
 import 'package:app_base_gestao_estado/providers/item_provider.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +16,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late Future<void> _initFuture;
+  DataLimitOption _selectedLimit = DataLimitOption.limit1k;
   ItemCardAttribute _selectedAttribute = ItemCardAttribute.backgroundColor;
 
   @override
@@ -23,7 +25,7 @@ class _HomePageState extends State<HomePage> {
 
     _initFuture = Future<void>(() async {
       await Future.delayed(Duration.zero);
-      final items = await ItemRepository().fetchItems(limit: 1000);
+      final items = await ItemRepository().fetchItems(limit: _selectedLimit.value);
       if (mounted) {
         Provider.of<ItemProvider>(context, listen: false).initialize(items);
       }
@@ -34,7 +36,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Filmes com ChangeNotifier por item'),
+        title: const Text('Lista de Filmes'),
         actions: [
           DropdownButton<ItemCardAttribute>(
             value: _selectedAttribute,
@@ -61,28 +63,74 @@ class _HomePageState extends State<HomePage> {
 
           final items = context.watch<ItemProvider>().items;
 
-          return ListView.builder(
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              return ChangeNotifierProvider.value(
-                value: items[index],
-                child: Consumer<ItemWithStyleNotifier>(
-                  builder: (context, itemNotifier, _) {
-                    return GestureDetector(
-                      onTap: () {
-                        itemNotifier.toggleStyle(_selectedAttribute);
+          return Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Flexible(
+                    child: Padding(
+                      padding: EdgeInsets.only(right: 16.0),
+                      child: Text(
+                        'Limite de dados',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Flexible(
+                    child: DropdownButton<DataLimitOption>(
+                      value: _selectedLimit,
+                      onChanged: (value) async {
+                        setState(() {
+                          _selectedLimit = value!;
+                        });
+
+                        final newItems = await ItemRepository()
+                            .fetchItems(limit: _selectedLimit.value);
+                        if (mounted) {
+                          context.read<ItemProvider>().initialize(newItems);
+                        }
                       },
-                      child: ItemCard(
-                        index: index,
-                        title: itemNotifier.item.title,
-                        description: itemNotifier.item.description,
-                        style: itemNotifier.style,
+                      items: DataLimitOption.values.map((attr) {
+                        return DropdownMenuItem(
+                          value: attr,
+                          child: Text(attr.label),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: items.length,
+                  itemBuilder: (context, index) {
+                    return ChangeNotifierProvider.value(
+                      value: items[index],
+                      child: Consumer<ItemWithStyleNotifier>(
+                        builder: (context, itemNotifier, _) {
+                          return GestureDetector(
+                            onTap: () {
+                              itemNotifier.toggleStyle(_selectedAttribute);
+                            },
+                            child: ItemCard(
+                              index: index,
+                              title: itemNotifier.item.title,
+                              description: itemNotifier.item.description,
+                              style: itemNotifier.style,
+                            ),
+                          );
+                        },
                       ),
                     );
                   },
                 ),
-              );
-            },
+              ),
+            ],
           );
         },
       ),
