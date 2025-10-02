@@ -115,7 +115,8 @@ class _HomePageState extends State<HomePage> {
                         builder: (context, itemNotifier, _) {
                           return GestureDetector(
                             onTap: () {
-                              itemNotifier.toggleStyle(_selectedAttribute);
+                              final tapTime = DateTime.now();
+                              itemNotifier.toggleStyle(_selectedAttribute, tapStartTime: tapTime);
                             },
                             child: ItemCard(
                               index: index,
