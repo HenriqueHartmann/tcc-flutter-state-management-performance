@@ -123,9 +123,11 @@ class _HomePageState extends State<HomePage> {
                                 if (state is ItemLoaded) {
                                   return GestureDetector(
                                     onTap: () {
+                                      final tapTime = DateTime.now();
                                       context.read<ItemBloc>().add(
                                             ToggleStyle(
-                                                attribute: _selectedAttribute),
+                                                attribute: _selectedAttribute,
+                                                tapStartTime: tapTime),
                                           );
                                     },
                                     child: ItemCard(

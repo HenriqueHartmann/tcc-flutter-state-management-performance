@@ -12,6 +12,7 @@ class InitializeItem extends ItemEvent {
 
 class ToggleStyle extends ItemEvent {
   final ItemCardAttribute attribute;
+  final DateTime? tapStartTime;
 
-  ToggleStyle({required this.attribute});
+  ToggleStyle({required this.attribute, this.tapStartTime});
 }
