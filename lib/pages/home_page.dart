@@ -1,6 +1,3 @@
-import 'package:app_base_gestao_estado/bloc/item/item_bloc.dart';
-import 'package:app_base_gestao_estado/bloc/item/item_event.dart';
-import 'package:app_base_gestao_estado/bloc/item/item_state.dart';
 import 'package:app_base_gestao_estado/bloc/item_list/item_list_bloc.dart';
 import 'package:app_base_gestao_estado/bloc/item_list/item_list_event.dart';
 import 'package:app_base_gestao_estado/bloc/item_list/item_list_state.dart';
@@ -22,12 +19,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   DataLimitOption _selectedLimit = DataLimitOption.limit1k;
   ItemCardAttribute _selectedAttribute = ItemCardAttribute.backgroundColor;
-
-  void onItemTapped(BuildContext context) {
-    context.read<ItemBloc>().add(
-          ToggleStyle(attribute: _selectedAttribute),
-        );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -115,32 +106,21 @@ class _HomePageState extends State<HomePage> {
                           final item = data[index]['item'] as Item;
                           final style = data[index]['style'] as ItemCardStyle;
 
-                          return BlocProvider<ItemBloc>(
-                            create: (_) => ItemBloc()
-                              ..add(InitializeItem(item: item, style: style)),
-                            child: BlocBuilder<ItemBloc, ItemState>(
-                              builder: (context, state) {
-                                if (state is ItemLoaded) {
-                                  return GestureDetector(
-                                    onTap: () {
-                                      final tapTime = DateTime.now();
-                                      context.read<ItemBloc>().add(
-                                            ToggleStyle(
-                                                attribute: _selectedAttribute,
-                                                tapStartTime: tapTime),
-                                          );
-                                    },
-                                    child: ItemCard(
-                                      index: index,
-                                      title: state.item.title,
-                                      description: state.item.description,
-                                      style: state.style,
-                                    ),
+                          return GestureDetector(
+                            onTap: () {
+                              final tapTime = DateTime.now();
+                              context.read<ItemListBloc>().add(
+                                    ToggleItemStyle(
+                                        index: index,
+                                        attribute: _selectedAttribute,
+                                        tapStartTime: tapTime),
                                   );
-                                }
-
-                                return const SizedBox();
-                              },
+                            },
+                            child: ItemCard(
+                              index: index,
+                              title: item.title,
+                              description: item.description,
+                              style: style,
                             ),
                           );
                         },
