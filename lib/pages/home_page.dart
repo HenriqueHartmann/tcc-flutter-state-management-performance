@@ -1,6 +1,9 @@
 import 'package:app_base_gestao_estado/bloc/item_list/item_list_bloc.dart';
 import 'package:app_base_gestao_estado/bloc/item_list/item_list_event.dart';
 import 'package:app_base_gestao_estado/bloc/item_list/item_list_state.dart';
+import 'package:app_base_gestao_estado/bloc/item_style/item_style_bloc.dart';
+import 'package:app_base_gestao_estado/bloc/item_style/item_style_event.dart';
+import 'package:app_base_gestao_estado/bloc/item_style/item_style_state.dart';
 import 'package:app_base_gestao_estado/models/data_limit_option.dart';
 import 'package:flutter/material.dart';
 import 'package:app_base_gestao_estado/models/item.dart';
@@ -106,21 +109,30 @@ class _HomePageState extends State<HomePage> {
                           final item = data[index]['item'] as Item;
                           final style = data[index]['style'] as ItemCardStyle;
 
-                          return GestureDetector(
-                            onTap: () {
-                              final tapTime = DateTime.now();
-                              context.read<ItemListBloc>().add(
-                                    ToggleItemStyle(
-                                        index: index,
-                                        attribute: _selectedAttribute,
-                                        tapStartTime: tapTime),
+                          return BlocProvider<ItemStyleBloc>(
+                            create: (_) => ItemStyleBloc(initialStyle: style),
+                            child: BlocBuilder<ItemStyleBloc, ItemStyleState>(
+                              builder: (context, styleState) {
+                                if (styleState is ItemStyleLoaded) {
+                                  return GestureDetector(
+                                    onTap: () {
+                                      final tapTime = DateTime.now();
+                                      context.read<ItemStyleBloc>().add(
+                                            ToggleItemStyle(
+                                                attribute: _selectedAttribute,
+                                                tapStartTime: tapTime),
+                                          );
+                                    },
+                                    child: ItemCard(
+                                      index: index,
+                                      title: item.title,
+                                      description: item.description,
+                                      style: styleState.style,
+                                    ),
                                   );
-                            },
-                            child: ItemCard(
-                              index: index,
-                              title: item.title,
-                              description: item.description,
-                              style: style,
+                                }
+                                return const SizedBox();
+                              },
                             ),
                           );
                         },
