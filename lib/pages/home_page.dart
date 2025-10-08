@@ -22,12 +22,16 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   DataLimitOption _selectedLimit = DataLimitOption.limit1k;
   ItemCardAttribute _selectedAttribute = ItemCardAttribute.backgroundColor;
+  late ItemListBloc _itemListBloc;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => ItemListBloc(repository: ItemRepository())
-        ..add(LoadItemList(limit: _selectedLimit.value)),
+      create: (context) {
+        _itemListBloc = ItemListBloc(repository: ItemRepository())
+          ..add(LoadItemList(limit: _selectedLimit.value));
+        return _itemListBloc;
+      },
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Lista de Filmes'),
@@ -74,9 +78,7 @@ class _HomePageState extends State<HomePage> {
                         setState(() {
                           _selectedLimit = value!;
                         });
-                        context
-                            .read<ItemListBloc>()
-                            .add(LoadItemList(limit: _selectedLimit.value));
+                        _itemListBloc.add(LoadItemList(limit: _selectedLimit.value));
                       },
                       items: DataLimitOption.values.map((attr) {
                         return DropdownMenuItem(
