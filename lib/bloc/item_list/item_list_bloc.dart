@@ -11,7 +11,7 @@ class ItemListBloc extends Bloc<ItemListEvent, ItemListState> {
     on<LoadItemList>((event, emit) async {
       emit(ItemListLoading());
       try {
-        final items = await repository.fetchItems(limit: event.limit.value);
+        final items = await repository.fetchItems(limit: event.limit);
 
         final itemsWithStyle = items.map((item) {
           return {

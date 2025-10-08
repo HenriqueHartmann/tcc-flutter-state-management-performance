@@ -45,24 +45,10 @@ class _HomePageState extends State<HomePage> {
                   _selectedAttribute = value!;
                 });
               },
-              dropdownColor: Colors.blue,
-              iconEnabledColor: Colors.white,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
               items: ItemCardAttribute.values.map((attr) {
                 return DropdownMenuItem<ItemCardAttribute>(
                   value: attr,
-                  child: Text(
-                    attr.label,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.white,
-                    ),
-                  ),
+                  child: Text(attr.label),
                 );
               }).toList(),
             )
@@ -81,7 +67,9 @@ class _HomePageState extends State<HomePage> {
                       child: Text(
                         'Limite de dados',
                         style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w500),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                   ),
@@ -157,7 +145,7 @@ class _HomePageState extends State<HomePage> {
                       );
                     }
 
-                    return const SizedBox(); // Estado inicial
+                    return const SizedBox();
                   },
                 ),
               ),

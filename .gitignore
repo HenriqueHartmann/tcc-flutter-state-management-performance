@@ -32,6 +32,10 @@ migrate_working_dir/
 .pub/
 /build/
 
+# FVM (Flutter Version Manager) related
+.fvm/
+.fvmrc
+
 # Symbolication related
 app.*.symbols
 
