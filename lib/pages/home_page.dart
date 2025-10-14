@@ -4,6 +4,7 @@ import 'package:app_base_gestao_estado/models/item.dart';
 import 'package:app_base_gestao_estado/models/item_card_style.dart';
 import 'package:app_base_gestao_estado/widgets/item_card.dart';
 import 'package:app_base_gestao_estado/data/item_repository.dart';
+import 'dart:developer' as developer;
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -37,12 +38,29 @@ class _HomePageState extends State<HomePage> {
     }).toList();
   }
 
-  void onItemTapped(List<Map<String, dynamic>> data, int index) {
+  void onItemTapped(List<Map<String, dynamic>> data, int index, DateTime tapStartTime) {
+    // Executa a mudança
     setState(() {
       final style = data[index]['style'] as ItemCardStyle;
-
       data[index]['style'] = style.toggleSelectedAttribute(_selectedAttribute);
     });
+    
+    // Mede o tempo end-to-end após a renderização
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _measureEndToEndTime(tapStartTime);
+    });
+  }
+  
+  void _measureEndToEndTime(DateTime tapStartTime) {
+    final endTime = DateTime.now();
+    final totalDuration = endTime.difference(tapStartTime);
+    
+    // Converte para milissegundos (mais fácil de ler)
+    final totalMs = totalDuration.inMicroseconds / 1000.0;
+    
+    final message = 'Tempo end-to-end (setState): ${totalMs.toStringAsFixed(1)}ms';
+    print(message);
+    developer.log(message, name: 'Performance');
   }
 
   @override
@@ -58,23 +76,11 @@ class _HomePageState extends State<HomePage> {
                 _selectedAttribute = value!;
               });
             },
-            dropdownColor: Colors.blue,
-            iconEnabledColor: Colors.white,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
             items: ItemCardAttribute.values.map((attr) {
               return DropdownMenuItem<ItemCardAttribute>(
                 value: attr,
                 child: Text(
                   attr.label,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white,
-                  ),
                 ),
               );
             }).toList(),
@@ -111,7 +117,6 @@ class _HomePageState extends State<HomePage> {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
-                              color: Colors.black,
                             ),
                           ),
                         ),
@@ -146,7 +151,8 @@ class _HomePageState extends State<HomePage> {
 
                       return GestureDetector(
                         onTap: () {
-                          onItemTapped(data, index);
+                          final tapTime = DateTime.now();
+                          onItemTapped(data, index, tapTime);
                         },
                         child: ItemCard(
                           index: index,
